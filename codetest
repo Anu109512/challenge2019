@@ -1,0 +1,160 @@
+import java.util.*;
+import java.sql.*;
+
+//Solution for Problem Statement 1
+public class Main
+{
+  public static void main (String[]args)
+  {
+    Scanner sc = new Scanner(System.in);  
+    int n;
+    int amount[],size_slab[],min_cost[],cost_per_gb[];
+    String theatreid[],theatre[],partner_id[],output[];
+    String indication;
+    String delivery_ID[] = new String[100];
+       int j=1;
+      System.out.println ("Enter number of inputs");
+      n = sc.nextInt ();
+      amount = new int[n];
+      theatreid = new String[n];
+      size_slab = new int[100];
+      min_cost = new int[100];
+      cost_per_gb = new int[100];
+      theatre = new String[100];
+      partner_id = new String[100];
+      output = new String[n];
+    for (int i = 0; i < n; i++)
+      {
+       delivery_ID[i] = "D" + j;
+	System.out.print (delivery_ID[i]);
+    amount[i]=sc.nextInt();
+    theatreid[i]=sc.nextLine();
+    j++;
+      }
+    String jdbcUrl = "jdbc:mysql://localhost:3306/PARTNERS";
+    String username = "root";
+    String password = "admin";
+    String sql = "select * from partners";
+    
+    try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password); 
+        Statement stmt = conn.createStatement(); 
+        ResultSet rs = stmt.executeQuery(sql);) {
+      
+      while (rs.next()) {
+       
+        for(int k=0;k<n;k++){
+            theatre[k] = rs.getString(1);
+            size_slab[k] = rs.getInt(2);
+            min_cost[k] = rs.getInt(3);
+            cost_per_gb[k] = rs.getInt(4);
+            partner_id[k] = rs.getString(5);
+            
+            output[k]= 
+            if((cost_per_gb[k] * amount[k]) >= min_cost[k]){
+                output[k]= cost_per_gb[k] * amount[k];
+                indication = "true";
+            }
+            else
+            indication = "false";
+            partner_id[k]=”  “;
+            output[k]=0;
+            
+            
+        System.out.println(delivery_ID[k] + indication + partner_id[k] + output[k]);
+        }
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }  
+    
+  }
+}
+-------------------------------------------------------------------------------------------------------------------
+
+import java.util.*;
+import java.sql.*;
+
+//Solution for Problem Statement 2
+public class Main
+{
+  public static void main (String[]args)
+  {
+    Scanner sc = new Scanner(System.in);  
+    int n,partner_count;
+    int amount[],output[],min_cost[],cost_per_gb[],partner_value[];
+    int sum=0;
+    String theatreid[],partner_id_table[],partner_id;
+    String indication;
+    String delivery_ID[] = new String[100];
+
+    int j=1;
+    System.out.println ("Enter number of inputs");
+    n = sc.nextInt ();
+    amount = new int[n];
+    output = new int[n];
+    theatreid = new String[n];
+    min_cost = new int[100];
+    cost_per_gb = new int[100];
+    partner_value = new int[100];
+    partner_id_table = new String[100];
+
+    for (int i = 0; i < n; i++)
+      {
+       delivery_ID[i] = "D" + j;
+	System.out.print (delivery_ID[i]);
+    amount[i]=sc.nextInt();
+    theatreid[i]=sc.nextLine();
+    j++;
+    sum=sum+amount[i];
+      }
+    String jdbcUrl = "jdbc:mysql://localhost:3306/PARTNERS";
+    String username = "root";
+    String password = "admin";
+    String sql = "select count(PARTNER_ID),PARTNER_ID from capacities group by PARTNER_ID";
+    
+    try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password); 
+        Statement stmt = conn.createStatement(); 
+        ResultSet rs = stmt.executeQuery(sql);){
+       String partner[]= new String[100];
+       
+        while (rs.next()) {
+            
+        partner_count = rs.getInt(1);
+        partner_id = rs.getString(2);
+        String[] p_id= partner_id.split(" ");
+        System.out.println("Number of partners= "+ partner_count);
+        stmt.executeBatch();
+        conn.commit();
+        
+        for(int a=0;a < partner.length;a++){
+    
+          partner[a] = "select * from partners inner join capacities on partners.PARTNER_ID = capacities.PARTNER_ID and capacities.PARTNER_ID = p_id[a]";  
+          conn.setAutoCommit(false);
+          min_cost[a] = rs.getInt(3);
+          cost_per_gb[a] = rs.getInt(4);
+          partner_id_table[a] = rs.getString(5);
+          partner_value[a] = rs.getInt(7);
+
+            
+        }
+        }
+        for(int b=0;b < partner.length;b++){
+              indication="true";
+            if(partner_value[b] > sum){
+                output[b]=amount[b]*cost_per_gb[b];
+                if(output[b] >= min_cost[b]){
+                indication="true";
+                }
+                else
+                for(int c=0;c < partner.length;c++){
+                    output[b]=amount[c]*cost_per_gb[c];
+                }
+            }
+            System.out.println(delivery_ID[b] + indication + partner[b] + output[b]);
+            
+        }
+        }catch (SQLException e) {
+      e.printStackTrace();
+    }  
+  }
+}
